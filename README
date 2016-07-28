@@ -1,0 +1,9 @@
+Small script to play Codenames if you do not have the cards at hand.
+
+The English words list was taken from :
+
+  https://boardgamegeek.com/article/21511664#21511664
+
+The Italian words list was translated by me from the English one, removing
+a few items that do not have a one-word translation in Italian and adding some
+others to restore the number to 400.
