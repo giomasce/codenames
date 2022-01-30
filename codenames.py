@@ -1,7 +1,5 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-
-from __future__ import unicode_literals
 
 import sys
 import random
@@ -57,16 +55,12 @@ def add_color_to_string(string, color, stream=sys.stdout, bold=False,
 
     """
     if force or has_color_support(stream):
-        return "%s%s%s%s" % (
-            curses.tparm(
-                curses.tigetstr("setaf"), color
-            ) if color != curses.COLOR_BLACK else "",
-            curses.tparm(curses.tigetstr("bold")) if bold else "",
-            string,
+        return (curses.tparm(curses.tigetstr("setaf"), color) if color != curses.COLOR_BLACK else b'') + \
+            (curses.tparm(curses.tigetstr("bold")) if bold else b'') + \
+            string.encode('utf-8') + \
             curses.tparm(curses.tigetstr("sgr0"))
-        )
     else:
-        return string
+        return string.encode('utf-8')
 
 class Game:
     def __init__(self, chosen, max_word_len):
@@ -77,18 +71,19 @@ class Game:
         self.colors = [curses.COLOR_WHITE] * len(self.chosen)
 
     def print_table(self):
-        sys.stdout.write((('+' + '-' * (self.max_word_len+2)) * TABLE_SIZE) + '+\n')
-        for i in xrange(TABLE_SIZE):
-            sys.stdout.write((('|' + ' ' * (self.max_word_len+2)) * TABLE_SIZE) + '|\n')
-            for j in xrange(TABLE_SIZE):
-                sys.stdout.write('| ')
-                sys.stdout.write(add_color_to_string(self.word_format.format(self.chosen[i+TABLE_SIZE*j]), color=self.colors[i+TABLE_SIZE*j], bold=True))
-                sys.stdout.write(' ')
-            sys.stdout.write('|\n')
-            for j in xrange(TABLE_SIZE):
-                sys.stdout.write((('|' + ' {},{}'.format(i+1, j+1) + ' ' * (self.max_word_len+2-4))))
-            sys.stdout.write('|\n')
-            sys.stdout.write((('+' + '-' * (self.max_word_len+2)) * TABLE_SIZE) + '+\n')
+        sys.stdout.buffer.write(((b'+' + b'-' * (self.max_word_len+2)) * TABLE_SIZE) + b'+\n')
+        for i in range(TABLE_SIZE):
+            sys.stdout.buffer.write(((b'|' + b' ' * (self.max_word_len+2)) * TABLE_SIZE) + b'|\n')
+            for j in range(TABLE_SIZE):
+                sys.stdout.buffer.write(b'| ')
+                sys.stdout.buffer.write(add_color_to_string(self.word_format.format(self.chosen[i+TABLE_SIZE*j]), color=self.colors[i+TABLE_SIZE*j], bold=True))
+                sys.stdout.buffer.write(b' ')
+            sys.stdout.buffer.write(b'|\n')
+            for j in range(TABLE_SIZE):
+                sys.stdout.buffer.write(((b'|' + ' {},{}'.format(i+1, j+1).encode('utf8') + b' ' * (self.max_word_len+2-4))))
+            sys.stdout.buffer.write(b'|\n')
+            sys.stdout.buffer.write(((b'+' + b'-' * (self.max_word_len+2)) * TABLE_SIZE) + b'+\n')
+        sys.stdout.buffer.flush()
 
     def get_word_and_colour(self, i, j):
         return self.chosen[i+TABLE_SIZE*j], self.colors[i+TABLE_SIZE*j]
@@ -107,7 +102,6 @@ class Game:
         return True
 
 def main():
-    sys.stdout = codecs.getwriter('utf8')(sys.stdout)
     with io.open(WORDS_FILENAME, encoding='utf-8') as fin:
         words = [x.strip() for x in fin.readlines()]
     max_word_len = max([len(x) for x in words])
